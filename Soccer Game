@@ -1,0 +1,265 @@
+import pygame
+pygame.init()
+
+win = pygame.display.set_mode((650,480))
+
+pygame.display.set_caption("Floating Soccer")
+bg1 = pygame.image.load('field.png')
+
+bg = pygame.transform.scale(bg1,(650,480))
+
+walkRight = [pygame.image.load('mum6.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png'), pygame.image.load('mum5.png'), pygame.image.load('mum4.png'), pygame.image.load('mum3.png'), pygame.image.load('mum2.png'), pygame.image.load('mum1.png')]
+walkLeft = [pygame.image.load('mum1.png'), pygame.image.load('mum2.png'), pygame.image.load('mum3.png'), pygame.image.load('mum4.png'), pygame.image.load('mum5.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png')]
+bg = bg
+char = pygame.image.load('mum6.png')
+
+clock = pygame.time.Clock()
+
+
+class player(object):
+    def __init__(self,x,y,width,height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.vel = 5
+        self.isJump = False
+        self.left = False
+        self.right = False
+        self.walkCount = 0
+        self.jumpCount = 10
+
+    def draw(self, win):
+        if self.walkCount + 1 >= 27:
+            self.walkCount = 0
+
+        if self.left:
+            win.blit(walkLeft[self.walkCount//3], (self.x,self.y))
+            self.walkCount += 1
+        elif self.right:
+            win.blit(walkRight[self.walkCount//3], (self.x,self.y))
+            self.walkCount +=1
+        else:
+            win.blit(char, (self.x,self.y))
+    def shoot(self,ballx):
+        ballx += 20
+
+class goalie(player):
+    def __init__(self,x,y,width,height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.line = None
+        self.walkCount = 0
+        self.isJump = False
+        self.vel = 5
+        self.left = False
+        self.right = False
+        self.jumpCount = 10
+
+class Ball(object):
+    def __init__(self,x,y,radius):
+        self.x = x
+        self.y = y
+        self.radius = radius
+    
+    def draw(self,win):
+        pygame.draw.circle(win,(0,0,0),(self.x,self.y),self.radius)
+
+class striker(player):
+    def __init__(self,x,y,width,height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.walkCount = 0
+        self.isJump = False
+        self.vel = 5
+        self.left = False
+        self.right = False
+        self.jumpCount = 10
+
+class defense(player):
+    def __init__(self,x,y,width,height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.walkCount = 0
+        self.isJump = False
+        self.vel = 5
+        self.left = False
+        self.right = False
+        self.jumpCount = 10
+    
+        
+
+
+def redrawGameWindow():
+    win.blit(bg, (0,0))
+    man.draw(win)
+    ball.draw(win)
+    goalie.draw(win)
+    striker.draw(win)
+    defense.draw(win)
+    pygame.display.update()
+
+
+#mainloop
+man = player(200, 200, 64,64)
+goalie = goalie(50,200,64,64)
+ball = Ball(320,250,10)
+striker = striker(400,200,64,64)
+defense = defense(530,200,64,64)
+run = True
+while run:
+    clock.tick(27)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_LEFT]:
+        man.x -= man.vel
+        man.left = True
+        man.right = False
+        goalie.x -= goalie.vel
+        goalie.left = True
+        goalie.right = False
+        if ball.y - ball.radius < man.y + man.height and ball.y + ball.radius > man.y:
+            if ball.x + ball.radius > man.x and ball.x - ball.radius < man.x + man.width:
+                ball.x -= 10
+        if ball.y - ball.radius < goalie.y + goalie.height and ball.y + ball.radius > goalie.y:
+            if ball.x + ball.radius > goalie.x and ball.x - ball.radius < goalie.x + goalie.width:
+                ball.x -= 10
+
+    elif keys[pygame.K_RIGHT]:
+        man.x += man.vel
+        man.right = True
+        man.left = False
+        if goalie.x < 90:
+            goalie.x += goalie.vel
+            goalie.right = True
+            goalie.left = False
+        if ball.y - ball.radius < man.y + man.height and ball.y + ball.radius > man.y:
+            if ball.x + ball.radius > man.x and ball.x - ball.radius < man.x + man.width:
+                ball.x += 10
+        if ball.y - ball.radius < goalie.y + goalie.height and ball.y + ball.radius > goalie.y:
+            if ball.x + ball.radius > goalie.x and ball.x - ball.radius < goalie.x + goalie.width:
+                ball.x += 50
+    elif keys[pygame.K_UP]:
+        man.y -= man.vel
+        man.right = False
+        man.left = False
+        if goalie.y > 110:
+            goalie.y -= goalie.vel
+            goalie.right = False
+            goalie.left = False
+        if ball.y - ball.radius < man.y + man.height and ball.y + ball.radius > man.y:
+            if ball.x + ball.radius > man.x and ball.x - ball.radius < man.x + man.width:
+                ball.y -= 10
+        if ball.y - ball.radius < goalie.y + goalie.height and ball.y + ball.radius > goalie.y:
+            if ball.x + ball.radius > goalie.x and ball.x - ball.radius < goalie.x + goalie.width:
+                ball.y -= 10
+    elif keys[pygame.K_DOWN]:
+        man.y += man.vel
+        man.right = False
+        man.left = False
+        if goalie.y < 290:
+            goalie.y += goalie.vel
+            goalie.right = False
+            goalie.left = False
+        if ball.y - ball.radius < man.y + man.height and ball.y + ball.radius > man.y:
+            if ball.x + ball.radius > man.x and ball.x - ball.radius < man.x + man.width:
+                ball.y += 10
+        if ball.y - ball.radius < goalie.y + goalie.height and ball.y + ball.radius > goalie.y:
+            if ball.x + ball.radius > goalie.x and ball.x - ball.radius < goalie.x + goalie.width:
+                ball.y += 10
+    if keys[pygame.K_l]:
+        
+        
+        if man.x > 450:
+            ball.x += 10
+    
+            
+    
+    if keys[pygame.K_a]:
+        striker.x -= 5
+        striker.right = False
+        striker.left = True
+        if defense.x > 510:
+            defense.x -= defense.vel
+            defense.left = True
+            defense.right = False
+        if ball.y - ball.radius < striker.y + striker.height and ball.y + ball.radius > striker.y:
+            if ball.x + ball.radius > striker.x and ball.x - ball.radius < striker.x + striker.width:
+                ball.x -= 10
+    
+
+    if keys[pygame.K_d]:
+        striker.x += 5
+        striker.right = True
+        striker.left = False
+        if defense.x < 630:
+            defense.x += defense.vel
+            defense.left = False
+            defense.right = True
+        if ball.y - ball.radius < striker.y + striker.height and ball.y + ball.radius > striker.y:
+            if ball.x + ball.radius > striker.x and ball.x - ball.radius < striker.x + striker.width:
+                ball.x += 10
+
+    if keys[pygame.K_s]:
+        striker.y += 5
+        striker.right = False
+        striker.left = False
+        if ball.y - ball.radius < striker.y + striker.height and ball.y + ball.radius > striker.y:
+            if ball.x + ball.radius > striker.x and ball.x - ball.radius < striker.x + striker.width:
+                ball.y += 10
+        
+
+    if keys[pygame.K_w]:
+        striker.y -= 5
+        striker.right = False
+        striker.left = False
+        if ball.y - ball.radius < striker.y + striker.height and ball.y + ball.radius > striker.y:
+            if ball.x + ball.radius > striker.x and ball.x - ball.radius < striker.x + striker.width:
+                ball.y -= 10
+
+    else:
+        man.right = False
+        man.left = False
+        man.walkCount = 0
+        goalie.right = False
+        goalie.left = False
+        goalie.walkCount = 0
+        striker.right = False
+        striker.left = False
+        striker.walkCount = 0
+        defense.right = False
+        defense.left = False
+        defense.walkCount = 0
+     
+        
+    if not(man.isJump):
+        if keys[pygame.K_SPACE]:
+            man.isJump = True
+            man.right = False
+            man.left = False
+            man.walkCount = 0
+    else:
+        if man.jumpCount >= -10:
+            neg = 1
+            if man.jumpCount < 0:
+                neg = -1
+            man.y -= (man.jumpCount ** 2) * 0.5 * neg
+            man.jumpCount -= 1
+        else:
+            man.isJump = False
+            man.jumpCount = 10
+                       
+    redrawGameWindow()
+
+pygame.quit()
