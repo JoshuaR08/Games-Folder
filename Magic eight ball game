@@ -1,0 +1,60 @@
+from tkinter import *
+import random
+import time
+
+
+#list of answers
+answers = ["As I see it, yes",
+ "Ask again later.",
+ "Better not tell you now.",
+ "Cannot predict now.",
+ "Concentrate and ask again.",
+ "Don’t count on it.",
+ "It is certain.",
+ "It is decidedly so.",
+ "Most likely.",
+ "My reply is no.",
+ "My sources say no.",
+ "Outlook not so good.",
+ "Outlook good.",
+ "Reply hazy, try again.",
+ "Signs point to yes.",
+ "Very doubtful.",
+ "Without a doubt.",
+ "Yes."]
+
+answer = random.choice(answers)
+
+def next_screen():
+    screen3 = Toplevel(root)
+    screen3.title("Prediction")
+    screen3.geometry("200x200")
+    Label(screen3, text=answer).pack()
+
+
+#Submit function
+def submit():
+    e.delete(0, END)
+    screen2 = Toplevel(root)
+    screen2.title("Success")
+    screen2.geometry("200x200")
+    Label(screen2,text="Submission success").pack()
+    Label(screen2, text="Magic at work. Please wait....").pack()
+    time.sleep(0.5)
+    next_screen()
+
+#Main screen
+root = Tk()
+root.title("Question")
+root.geometry("500x500")
+Label(root, text="Ask your question").grid(column=0,row=0)
+e = Entry()
+e.grid(column=1, row=0)
+sub = Button(root, text="Submit", command=submit)
+sub.grid(column=0,row=2)
+
+
+
+#Main loop
+root.mainloop()
+
