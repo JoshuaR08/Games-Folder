@@ -1,0 +1,193 @@
+# Snake game by Josh
+import turtle
+import time
+import random
+import math
+
+
+delay = 0.15
+score = 0
+high_score = 0
+# Draw the score
+# Pen
+pen = turtle.Turtle()
+pen.speed(0)
+pen.shape("square")
+pen.color("white")
+pen.penup()
+pen.hideturtle()
+pen.goto(0, 260)
+pen.write("Score:  0  High Score: 0", align='center', font=("Courier", 24, "normal"))
+
+# Create the enemy
+# screen
+wn = turtle.Screen()
+wn.title("space invaders by Josh")
+wn.bgcolor("black")
+wn.setup(width=600, height=600)
+wn.tracer(0)  # turns off the screen updates
+
+# space ship
+head = turtle.Turtle()
+head.speed(0)
+head.shape("triangle")
+head.color("green")
+head.penup()
+head.goto(0, -250)
+head.direction = "stop"
+head.setheading(90)
+
+number_of_enemies = 5
+enemies = []
+
+
+# Add enemies
+for i in range(number_of_enemies):
+    enemies.append(turtle.Turtle())
+
+
+# Create the enemy
+for enemy in enemies:
+    enemy.color("red")
+    enemy.shape("circle")
+    enemy.penup()
+    enemy.speed(0)
+    x = random.randint(-200, 200)
+    y = random.randint(-200, 250)
+    enemy.setposition(x, y)
+# choose the number of enemies
+
+
+# Create the bullet
+bullet = turtle.Turtle()
+bullet.color("yellow")
+bullet.shape("triangle")
+bullet.penup()
+bullet.speed(0)
+bullet.setposition(0, -250)
+bullet.setheading(90)
+bullet.shapesize(0.5, 0.5)
+bullet.hideturtle()
+bulletspeed = 50
+bulletstate = 'ready'
+
+# Functions
+
+enemyspeed = 10
+
+
+def fire_bullet():
+    global bulletstate
+    if bulletstate == "ready":
+        bulletstate = "fire"
+        x = head.xcor()
+        y = head.ycor()
+        bullet.setposition(x, y + 10)
+        bullet.showturtle()
+        bulletstate = "fire"
+
+
+def is_collision(t1, t2):
+    distance = math.sqrt(math.pow(t1.xcor() - t2.xcor(), 2) + math.pow(t1.ycor() - t2.ycor(), 2))
+
+    if distance < 25:
+        return True
+    else:
+        return False
+
+
+def go_left():
+    head.direction = "left"
+
+
+def go_right():
+    head.direction = "right"
+
+
+def stop():
+    head.direction = "stop"
+
+
+def move():
+    if head.direction == "left":
+        x = head.xcor()
+        head.setx(x - 20)
+
+    if head.direction == "right":
+        x = head.xcor()
+        head.setx(x + 20)
+
+
+# key board bindings
+wn.listen()
+
+wn.onkeypress(go_left, "a")
+wn.onkeypress(go_right, "d")
+wn.onkeypress(stop, "s")
+wn.onkeypress(fire_bullet, "w")
+
+# main game loop
+while True:
+    wn.update()
+    time.sleep(delay)
+    if head.xcor() > -280 and head.xcor() < 280:
+        move()
+    for enemy in enemies:
+        # move the enemy
+        x = enemy.xcor()
+        x += enemyspeed
+        enemy.setx(x)
+
+        # Move the enemy back and down
+        if enemy.xcor() > 280:
+            y = enemy.ycor()
+            y -= 40
+            enemy.sety(y)
+            enemyspeed *= -1
+
+        if enemy.xcor() < -280:
+            y = enemy.ycor()
+            y -= 40
+            enemy.sety(y)
+            enemyspeed *= -1
+
+        if is_collision(bullet, enemy):
+            bullet.hideturtle()
+            bulletstate = 'ready'
+            bullet.setposition(0, -400)
+            score += 10
+
+            if score > high_score:
+                high_score = score
+            pen.clear()
+
+            pen.write("Score {}  High Score:  {}".format(score, high_score), align='center',
+                      font=('Courier', 24, "normal"))
+            wn.update()
+            # Reset the enemy
+            x = random.randint(-200, 200)
+            y = random.randint(-200, 250)
+            enemy.setposition(x, y)
+        if is_collision(enemy, head):
+            head.hideturtle()
+            enemy.hideturtle()
+            print("game over")
+            break
+
+
+    if bulletstate == "fire":
+        y = bullet.ycor()
+        y += bulletspeed
+        bullet.sety(y)
+
+    if bullet.ycor() > 275:
+        bullet.hideturtle()
+        bulletstate = "ready"
+
+    for enemy in enemies:
+        if enemy.ycor() < -280:
+            enemy.goto(0, 0)
+
+
+
+wn.mainloop()
