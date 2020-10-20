@@ -1,0 +1,62 @@
+import random
+banana = 'banana'
+apple = 'apple'
+pear = 'pear'
+plum = 'plum'
+peach = 'peach'
+mango = 'mango'
+grapefruit = 'grapefruit'
+first_list = [banana,apple,pear,plum,peach,mango,grapefruit]
+word = list(random.choice(first_list))
+hidden = []
+
+for character in word:
+    hidden.append('_')
+    attempts = 0
+    max_attempts = 4
+
+isGameOver = False
+while not isGameOver:
+    print(f"you have {max_attempts - attempts} attempts remaining")
+    hiddenString = ' '.join(hidden)
+    print(f"The current word is {hiddenString}")
+
+    print('     ----------')
+    print('      |       |' + ('O' if attempts > 0 else ''))
+    print('      |        '+ ('//' if attempts > 1 else ''))
+    print('      |        '+ ('|' if attempts > 2 else ''))
+    print('      |        '+ ('////' if attempts > 3 else ''))
+    print('      |        ')
+    print('-----------------')
+
+    letter_guessed = input("Please guess a letter")
+
+
+    if letter_guessed in word:
+        print(f"you guessed correctly. {letter_guessed} was in the word.")
+        for i in range( len(word)):
+            character = word[i]
+            if character == letter_guessed:
+                hidden[i] = word[i]
+                word[i] = '-'
+    elif letter_guessed not in word:
+        print(f"you guessed wrong. {letter_guessed} was not in the word")
+        attempts += 1
+    print(hidden)
+
+    if (all('-' == char for char in word)):
+        print('congrats you won')
+        isGameOver = True
+
+    if (attempts >= max_attempts):
+       print("you failed. Rest in peace")
+       isGameOver = True
+
+
+
+
+
+
+
+
+
