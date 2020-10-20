@@ -1,0 +1,227 @@
+
+import random
+import turtle
+
+turtle.fd(0)
+turtle.speed(0)
+turtle.bgcolor("black")
+turtle.ht()
+turtle.setundobuffer(1)
+turtle.tracer(1)
+
+class Sprite(turtle.Turtle):
+    def __init__(self, spriteshape, color, startx, starty):
+        turtle.Turtle.__init__(self, shape = spriteshape)
+        self.speed(0)
+        self.penup()
+        self.color(color)
+        self.fd(0)
+        self.goto(startx,starty)
+        self.speed = 1
+    
+    def move(self):
+        self.fd(self.speed)
+
+        if self.xcor() > 290:
+            self.setx(290)
+            self.rt(60)
+        if self.xcor() < -290:
+            self.setx(-290)
+            self.rt(60)
+        if self.ycor() > 290:
+            self.sety(290)
+            self.rt(60)
+        if self.ycor() < -290:
+            self.sety(-290)
+            self.rt(60)
+    
+    def is_collision(self, other):
+        if (self.xcor() >= (other.xcor() - 20)) and \
+        self.xcor() <= other.xcor() + 20 and \
+        self.ycor() >= other.ycor() - 20 and \
+        self.ycor() <= other.ycor() + 20:
+            return True
+        else:
+            return False
+    
+    
+
+class Player(Sprite):
+    def __init__(self, spriteshape, color, startx, starty):
+        Sprite.__init__(self, spriteshape, color, startx, starty)
+        self.speed = 4
+        self.lives = 3
+        if self.lives == 0:
+            self.hideturtle()
+    
+    def turn_left(self):
+        self.lt(45)
+    
+    def turn_right(self):
+        self.rt(45)
+    
+    def accelerate(self):
+        self.speed += 1
+    
+    def deaccelerate(self):
+        self.speed -= 1
+
+class Missile(Sprite):
+    def __init__(self, spriteshape,color,startx,starty):
+        Sprite.__init__(self,spriteshape,color,startx,starty)
+        self.shapesize(stretch_wid=0.3, stretch_len=0.4, outline=None)
+        self.speed = 20
+        self.status = "ready"
+        self.goto(-1000,1000)
+    def fire(self):
+        if self.status == "ready":
+            self.goto(player.xcor(), player.ycor())
+            self.setheading(player.heading())
+            self.status = "firing"
+
+    def move(self):
+        if self.status == "ready":
+            self.goto(-1000,1000)
+
+
+
+        if self.status == "firing":
+            self.fd(self.speed)
+        #Border check
+        if self.xcor() < -290 or self.xcor() > 290 or self.ycor() < -290 or self.ycor() > 290:
+            self.goto(-1000,1000)
+            self.status = "ready"
+
+class Bullet(Sprite):
+    def __init__(self, spriteshape,color,startx,starty):
+        Sprite.__init__(self,spriteshape,color,startx,starty)
+        self.shapesize(stretch_wid=0.3, stretch_len=0.4, outline=None)
+        self.speed = 20
+        self.status = "ready"
+        self.goto(-1050,1000)
+    def fire(self):
+        if self.status == "ready":
+            self.goto(player2.xcor(), player2.ycor())
+            self.setheading(player2.heading())
+            self.status = "firing"
+
+    def move(self):
+        if self.status == "ready":
+            self.goto(-1050,1000)
+
+
+
+        if self.status == "firing":
+            self.fd(self.speed)
+        #Border check
+        if self.xcor() < -290 or self.xcor() > 290 or self.ycor() < -290 or self.ycor() > 290:
+            self.goto(-1050,1000)
+            self.status = "ready"
+
+
+
+           
+
+player = Player("triangle", "white", -250, -20)
+player2 = Player("triangle", "red", 250, 250)
+missile = Missile("triangle", "yellow", 0,0)
+bullet = Bullet("triangle", "yellow", 0,0)
+
+
+
+turtle.listen()
+turtle.onkeypress(player.turn_left, "Left")
+turtle.onkeypress(player.turn_right, "Right")
+turtle.onkeypress(player2.turn_left, "a")
+turtle.onkeypress(player2.turn_right, "d")
+turtle.onkeypress(missile.fire, "space")
+turtle.onkeypress(bullet.fire, "e")
+
+
+class Game():
+    def __init__(self):
+        self.level = 1
+        self.score = 0
+        self.state = "playing"
+        self.pen = turtle.Turtle()
+        
+    
+    def draw_border(self):
+        #Draw border
+        self.pen.speed(0)
+        self.pen.color("white")
+        self.pen.pensize(3)
+        self.pen.penup()
+        self.pen.goto(-300,300)
+        self.pen.pendown()
+        for side in range(4):
+            self.pen.fd(600)
+            self.pen.rt(90)
+        self.pen.penup()
+        self.pen.ht()
+        self.pen.pendown()
+    
+    def show_status(self):
+        self.pen.undo()
+        msg = "Player 1 Score: %s"%(self.score)
+        self.pen.penup()
+        self.pen.goto(-300,310)
+        self.pen.write(msg, font=("Arial", 16, "normal"))
+
+        
+
+game = Game()
+game.draw_border()
+
+game.show_status()
+
+while True:
+    player.move()
+    player2.move()
+    missile.move()
+    bullet.move()
+    
+    
+
+
+    if missile.is_collision(player2):
+        x = random.randint(-250,250)
+        y = random.randint(-250,250)
+        player2.goto(x,y)
+        player2.lives -= 1
+        game.score += 1
+        game.show_status()
+        if player2.lives == 0:
+            player2.hideturtle()
+
+    
+    if bullet.is_collision(player):
+        x = random.randint(-250,250)
+        y = random.randint(-250,250)
+        player.goto(x,y)
+        player.lives -= 1
+        game.score -= 1
+        game.show_status()
+        if player.lives == 0:
+            player.hideturtle()
+    
+    if player.is_collision(player2):
+        x = random.randint(-250,250)
+        y = random.randint(-250,250)
+        player.goto(x,y)
+        x2 = random.randint(-250,250)
+        y2 = random.randint(-250,250)
+        player2.goto(x2,y2)
+        player.lives -= 1
+        player2.lives -= 1
+        game.show_status()
+    
+    
+
+
+    
+    
+    
+    
+
+turtle.mainloop()
