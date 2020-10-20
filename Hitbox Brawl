@@ -1,0 +1,395 @@
+import pygame
+import random
+import time
+pygame.init()
+
+display_width = 500
+display_height = 480
+
+win = pygame.display.set_mode((display_width,display_height))
+
+
+
+pygame.display.set_caption("First Game")
+
+
+
+walkLeft = [pygame.image.load('mum1.png'), pygame.image.load('mum2.png'), pygame.image.load('mum3.png'), pygame.image.load('mum4.png'), pygame.image.load('mum5.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png'), pygame.image.load('mum6.png')]
+walkRight = [pygame.image.load('mum6.png'),pygame.image.load('mum6.png'),pygame.image.load('mum6.png'),pygame.image.load('mum6.png'),pygame.image.load('mum6.png'),pygame.image.load('mum6.png'),pygame.image.load('mum6.png'),pygame.image.load('mum6.png'),pygame.image.load('mum6.png')]
+runLeft = [pygame.image.load('de1.png'),pygame.image.load('de2.png'),pygame.image.load('de3.png'),pygame.image.load('de4.png'),pygame.image.load('de5.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png')]
+runRight = [pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png'),pygame.image.load('de6.png')]
+bg = pygame.image.load('bg.jpg')
+char = pygame.image.load('mum6.png')
+
+clock = pygame.time.Clock()
+
+smallfont = pygame.font.SysFont("comicsansms", 25)
+medfont = pygame.font.SysFont("comicsansms", 50)
+largefont = pygame.font.SysFont("comicsansms", 85)
+
+red = (200,0,0)
+light_red = (255,0,0)
+yellow = (200,200,0)
+light_yellow = (255,255,0)
+blue = (0,0,200)
+light_blue = (0,0,255)
+black = (0,0,0)
+white = (255,255,255)
+green = (0,255,0)
+updades =  ['Damage', 'Health']
+
+ran = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+
+
+
+def text_objects(text, color,size = "small"):
+
+    if size == "small":
+        textSurface = smallfont.render(text, True, color)
+    if size == "medium":
+        textSurface = medfont.render(text, True, color)
+    if size == "large":
+        textSurface = largefont.render(text, True, color)
+
+    return textSurface, textSurface.get_rect()
+
+def text_to_button(msg, color, buttonx, buttony, buttonwidth, buttonheight, size = "small"):
+    textSurf, textRect = text_objects(msg,color,size)
+    textRect.center = ((buttonx+(buttonwidth/2)), buttony+(buttonheight/2))
+    win.blit(textSurf, textRect)
+
+
+
+def button(text, x, y, width, height, inactive_color, active_color, action = None):
+    cur = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    #print(click)
+    if x + width > cur[0] > x and y + height > cur[1] > y:
+        pygame.draw.rect(gameDisplay, active_color, (x,y,width,height))
+        if click[0] == 1 and action != None:
+            if action == "quit":
+                pygame.quit()
+                quit()
+
+            
+
+            if action == "play":
+                man.reset()
+                enemy.reset()
+
+            
+            
+    else:
+        pygame.draw.rect(win, inactive_color, (x,y,width,height))
+
+    text_to_button(text,black,x,y,width,height)       
+
+
+
+class player(object):
+    def __init__(self,x,y,width,height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.vel = 5
+        self.isJump = False
+        self.left = False
+        self.right = False
+        self.walkCount = 0
+        self.jumpCount = 10
+        self.standing = True
+        self.health = 32
+        self.damage = 1
+
+    def draw(self, win):
+        if self.walkCount + 1 >= 27:
+            self.walkCount = 0
+
+        if not(self.standing):
+            if self.left:
+                win.blit(walkLeft[self.walkCount//3], (self.x,self.y))
+                self.walkCount += 1
+            elif self.right:
+                win.blit(walkRight[self.walkCount//3], (self.x,self.y))
+                self.walkCount +=1
+        else:
+            if self.right:
+                win.blit(walkRight[0], (self.x, self.y))
+            else:
+                win.blit(walkLeft[0], (self.x, self.y))
+    def hit(self):
+        self.health -= enemy.damage
+        print(man.health)
+    
+    def healthbars(self,win):
+        pygame.draw.rect(win,(255,0,0),(self.x + 5,(self.y - 12),32,10))
+        pygame.draw.rect(win,(0,255,0),(self.x + 5,self.y-12,self.health,10))
+    
+    def reset(self):
+        self.health = 32
+        self.damage = 1
+        self.x = 50
+                
+
+
+class projectile(object):
+    def __init__(self,x,y,radius,color,facing):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.facing = facing
+        self.vel = 8 * facing
+
+    def draw(self,win):
+        pygame.draw.circle(win, self.color, (self.x,self.y), self.radius)
+
+
+class enemy(object):
+    def __init__(self,x,y,width,height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.vel = 5
+        self.isJump = False
+        self.left = False
+        self.right = False
+        self.walkCount = 0
+        self.jumpCount = 10
+        self.standing = True
+        self.health = 32
+        self.damage = 8
+
+    def draw(self, win):
+        if self.walkCount + 1 >= 27:
+            self.walkCount = 0
+
+        if not(self.standing):
+            if self.left:
+                win.blit(runLeft[self.walkCount//3], (self.x,self.y))
+                self.walkCount += 1
+            elif self.right:
+                win.blit(runRight[self.walkCount//3], (self.x,self.y))
+                self.walkCount +=1
+        else:
+            if self.right:
+                win.blit(runRight[0], (self.x, self.y))
+            else:
+                win.blit(runLeft[0], (self.x, self.y))
+    
+    def hit(self):
+        print(self.health)
+        self.health -= man.damage
+    
+    def healthbars(self,win):
+        pygame.draw.rect(win,(255,0,0),(self.x + 5,(self.y - 12),32,10))
+        pygame.draw.rect(win,(0,255,0),(self.x + 5,self.y-12,self.health,10))
+    
+    def reset(self):
+        enemy.health = 32
+        enemy.damage = 8
+        enemy.x = 300
+
+class Upgrade(object):
+    def __init__(self,x,y,width,height,boost,radius):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.radius = radius
+        self.boost = boost
+        self.color = red
+        self.colors = [blue,yellow,red]
+        if self.boost == 'Damage':
+            self.color = blue
+        if self.boost == 'Speed':
+            self.color = yellow
+        if self.boost == 'Health':
+            self.color = red
+    
+    def draw(self,win):
+        pygame.draw.circle(win,self.color,(self.x,self.y),self.radius)
+    
+    def do(self,person):
+        if self.boost == 'Damage':
+            person.damage += 1
+            print(person.damage)
+        
+        
+        
+        if self.boost == 'Health':
+            person.health += 20
+            print(person.health)
+    
+
+
+
+def redrawGameWindow():
+    win.blit(bg, (0,0))
+    man.draw(win)
+    enemy.draw(win)
+    man.healthbars(win)
+    enemy.healthbars(win)
+    for upgrade in upgrades:
+       upgrade.draw(win)
+    for bullet in bullets:
+        bullet.draw(win)
+    pygame.display.update()
+
+
+
+
+         
+#mainloop
+
+man = player(50, 410, 64,64)
+enemy = enemy(400,410,64,64)
+upgrade = Upgrade(200,410,64,64,'Damage',10)
+upgrades = []
+upgrades.append(upgrade)
+
+print('ready')
+time.sleep(0.5)
+print('set')
+time.sleep(0.5)
+print('GO!')
+bullets = []
+run = True
+while run:
+    
+    
+    clock.tick(27)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        
+    for bullet in bullets:
+        if bullet.x < 500 and bullet.x > 0:
+            bullet.x += bullet.vel
+        else:
+            bullets.pop(bullets.index(bullet))
+    
+    for bullet in bullets:
+        if bullet.y - bullet.radius < enemy.y + enemy.height and bullet.y + bullet.radius > enemy.y:
+            if bullet.x + bullet.radius > enemy.x and bullet.x - bullet.radius < enemy.x + enemy.width:
+                enemy.hit()
+                bullets.pop(bullets.index(bullet))
+    
+    for upgrade in upgrades:
+        if upgrade.y - upgrade.radius < enemy.y + enemy.height and upgrade.y + upgrade.radius > enemy.y:
+            if upgrade.x + upgrade.radius > enemy.x and upgrade.x - upgrade.radius < enemy.x + enemy.width:
+                upgrade.do(enemy)
+                upgrades.pop(upgrades.index(upgrade))
+    
+    for upgrade in upgrades:
+        if upgrade.y - upgrade.radius < man.y + enemy.height and upgrade.y + upgrade.radius > man.y:
+            if upgrade.x + upgrade.radius > man.x and upgrade.x - upgrade.radius < man.x + man.width:
+                upgrade.do(man)
+                upgrades.pop(upgrades.index(upgrade))
+    
+    
+
+    
+    
+    
+    if enemy.x == man.x and enemy.y == man.y:
+        man.hit()
+        
+
+
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_SPACE]:
+        if man.left:
+            facing = -1
+        else:
+            facing = 1
+            
+        if len(bullets) < 5:
+            bullets.append(projectile(round(man.x + man.width //2), round(man.y + man.height//2), 6, (0,0,0), facing))
+    
+    if keys[pygame.K_t]: 
+            if len(upgrades) < 5:
+                upgrades.append(Upgrade(random.randint(50,300),410,32,32,random.choice(updades),10))
+                print(upgrades)
+
+    if keys[pygame.K_LEFT] and man.x > man.vel:
+        man.x -= man.vel
+        man.left = True
+        man.right = False
+        man.standing = False
+    elif keys[pygame.K_RIGHT] and man.x < 500 - man.width - man.vel:
+        man.x += man.vel
+        man.right = True
+        man.left = False
+        man.standing = False
+    else:
+        man.standing = True
+        man.walkCount = 0
+        
+    if not(man.isJump):
+        if keys[pygame.K_UP]:
+            man.isJump = True
+            man.right = False
+            man.left = False
+            man.walkCount = 0
+    else:
+        if man.jumpCount >= -10:
+            neg = 1
+            if man.jumpCount < 0:
+                neg = -1
+            man.y -= (man.jumpCount ** 2) * 0.5 * neg
+            man.jumpCount -= 1
+        else:
+            man.isJump = False
+            man.jumpCount = 10
+    
+    if keys[pygame.K_a] and enemy.x > enemy.vel:
+        enemy.x -= enemy.vel
+        enemy.left = True
+        enemy.right = False
+        enemy.standing = False
+    elif keys[pygame.K_d] and enemy.x < 500 - enemy.width - enemy.vel:
+        enemy.x += enemy.vel
+        enemy.right = True
+        enemy.left = False
+        enemy.standing = False
+    else:
+        enemy.standing = True
+        enemy.walkCount = 0
+    
+        
+
+        
+    if not(enemy.isJump):
+        if keys[pygame.K_w]:
+            enemy.isJump = True
+            enemy.right = False
+            enemy.left = False
+            enemy.walkCount = 0
+    else:
+        if enemy.jumpCount >= -10:
+            neg = 1
+            if enemy.jumpCount < 0:
+                neg = -1
+            enemy.y -= (enemy.jumpCount ** 2) * 0.5 * neg
+            enemy.jumpCount -= 1
+        else:
+            enemy.isJump = False
+            enemy.jumpCount = 10
+    
+    if man.health <= 0:
+        print('game over player 2 wins')
+        run = False
+    
+    if enemy.health <= 0:
+        print('Game Over Player 1 Wins')
+        run = False
+            
+    redrawGameWindow()
+
+pygame.quit()
+
