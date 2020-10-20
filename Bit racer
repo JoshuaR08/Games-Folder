@@ -1,0 +1,589 @@
+import pygame
+import random
+
+pygame.init()
+
+display_width = 700
+display_height = 600
+
+
+win = pygame.display.set_mode((display_width,display_height))
+
+
+pygame.display.set_caption("Bit racer")
+
+#Image Loading
+car = pygame.image.load("carImg.png")
+
+grass = pygame.image.load("Grass_Tile.png")
+
+rock = pygame.image.load("rock.png")
+rockf = pygame.transform.scale(rock,(25,25))
+
+left = pygame.transform.rotate(car,90)
+right = pygame.transform.rotate(car,270)
+down = pygame.transform.rotate(car,180)
+
+car2 = pygame.image.load("car4.png")
+car2f = pygame.transform.scale(car2,(32,32))
+
+left2 = pygame.transform.rotate(car2f,90)
+right2 = pygame.transform.rotate(car2f,270)
+down2 = pygame.transform.rotate(car2f,180)
+
+lap1 = 0
+lap2 = 0
+
+ready = True
+
+play_again = pygame.image.load("Play_BTN.png")
+play_againf = pygame.transform.scale(play_again,(64,64))
+
+sett = pygame.image.load("Settings_BTN.png")
+settf = pygame.transform.scale(sett,(64,64))
+
+
+
+
+
+road1 = pygame.image.load("Road_01_Tile_01.png")
+road1s = pygame.transform.scale(road1,(64,64))
+
+road2 = pygame.image.load("Road_01_Tile_02.png")
+road2s = pygame.transform.scale(road2,(64,64))
+
+road3 = pygame.image.load("Road_01_Tile_03.png")
+road3s = pygame.transform.scale(road3,(64,64))
+
+close_button = pygame.image.load("Close_BTN.png")
+close_buttonsf = pygame.transform.scale(close_button,(64,64))
+
+pause_button = pygame.image.load("Pause_BTN.png")
+pause_buttonf = pygame.transform.scale(pause_button,(64,64))
+
+exit = pygame.image.load("Exit_BTN.png")
+exit_button = pygame.transform.scale(exit,(64,64))
+
+
+img = car
+img2 = car2f
+
+rocks = []
+
+#Color definitions
+white = (255,255,255)
+black = (0,0,0)
+red = (200,0,0)
+green = (0,200,0)
+blue = (0,0,200)
+light_red = (255,0,0)
+light_green = (0,255,0)
+light_blue = (0,0,255)
+brown = (160,82,45)
+
+#Font definitions
+smallfont = pygame.font.SysFont("comicsansms", 25)
+medfont = pygame.font.SysFont("comicsansms", 50)
+largefont = pygame.font.SysFont("comicsansms", 85)
+
+
+#Core variables
+x = 60
+y = 220
+x2 = 80
+y2 = 220
+x3 = 50
+y3 = 260
+width = 40
+height = 60
+width2 = 64
+height2 = 64
+fwidth = 60
+fheight = 20
+vel = 15
+vel2 = 10
+
+def text_objects(text, color,size = "small"):
+
+    if size == "small":
+        textSurface = smallfont.render(text, True, color)
+    if size == "medium":
+        textSurface = medfont.render(text, True, color)
+    if size == "large":
+        textSurface = largefont.render(text, True, color)
+
+    return textSurface, textSurface.get_rect()
+
+def text_to_button(msg, color, buttonx, buttony, buttonwidth, buttonheight, size = "small"):
+    textSurf, textRect = text_objects(msg,color,size)
+    textRect.center = ((buttonx+(buttonwidth/2)), buttony+(buttonheight/2))
+    win.blit(textSurf, textRect)
+
+def message_to_screen(msg,color, y_displace = 0, size = "small"):
+    textSurf, textRect = text_objects(msg,color,size)
+    textRect.center = (int(display_width / 2), int(display_height / 2)+y_displace)
+    win.blit(textSurf, textRect)
+   
+def draw_tiles():
+    win.blit(grass,(400,600))
+    win.blit(grass,(400,200))
+    win.blit(grass,(400,100))
+    win.blit(grass,(400,20))
+    win.blit(grass,(300,400))
+    win.blit(grass,(200,400))
+    win.blit(grass,(100,400))
+    win.blit(grass,(10,400))
+    win.blit(grass,(0,200))
+    win.blit(grass,(0,0))
+
+
+def draw_track():
+    reverse = pygame.transform.rotate(road3s,90)
+    tilt1 = pygame.transform.rotate(road1s,270)
+    tilt2 = pygame.transform.rotate(road1s,180)
+    win.blit(road3s,(350,330))
+    win.blit(road3s,(320,330))
+    win.blit(road3s,(270,330))
+    win.blit(road3s,(230,330))
+    win.blit(road3s,(190,330))
+    win.blit(road3s,(150,330))
+    win.blit(road3s,(110,330))
+    win.blit(road3s,(80,330))
+    win.blit(road3s,(50,330))
+    win.blit(reverse,(331,100))
+    win.blit(reverse,(331,160))
+    win.blit(reverse,(331,200))
+    win.blit(reverse,(331,240))
+    win.blit(reverse,(331,280))
+    win.blit(tilt2,(331,50))
+    win.blit(road3s,(270,50))
+    win.blit(road3s,(230,50))
+    win.blit(road3s,(190,50))
+    win.blit(road3s,(150,50))
+    win.blit(road3s,(110,50))
+    win.blit(tilt1,(50,50))
+    win.blit(reverse,(50,100))
+    win.blit(reverse,(50,160))
+    win.blit(reverse,(50,200))
+    win.blit(reverse,(50,240))
+    win.blit(reverse,(50,280))
+
+    
+
+def pause():
+    global y
+    global y2
+
+    paused = True
+    message_to_screen("Paused",black,-100,size="large")
+    message_to_screen("Press C to continue playing or Q to quit",black,25)
+    y = 210
+    y2 = 210
+    pygame.display.update()
+    while paused:
+        for event in pygame.event.get():
+                
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_c:
+                        paused = False
+                        
+                    elif event.key == pygame.K_q:
+                        pygame.quit()
+                        quit()
+                    
+
+        
+
+        
+
+
+def buttonq(text, x, y, width, height, inactive_color, active_color, action = None):
+    cur = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    
+    #print(click)
+    if x + width > cur[0] > x and y + height > cur[1] > y:
+        win.blit(close_buttonsf,(x,y))
+        if click[0] == 1 and action != None:
+            if action == "quit":
+                
+                pygame.quit()
+                quit()
+
+            
+            
+    else:
+        win.blit(close_buttonsf,(x,y))
+
+
+def buttonp(text, x, y, width, height, inactive_color, active_color, action = None):
+    cur = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    
+    #print(click)
+    if x + width > cur[0] > x and y + height > cur[1] > y:
+        win.blit(pause_buttonf,(x,y))
+        if click[0] == 1 and action != None:
+            if action == "pause":
+                pause()          
+    else:
+        win.blit(pause_buttonf,(x,y))
+
+def buttonplay(text, x, y4, width, height, inactive_color, active_color, action = None):
+    cur = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    y = 210
+    y2 = 210
+    
+    #print(click)
+    if x + width > cur[0] > x and y4 + height > cur[1] > y4:
+        win.blit(play_againf,(x,y4))
+        if click[0] == 1 and action != None:
+            if action == "play":
+                pause()
+                gameloop()
+                
+                          
+    else:
+        win.blit(play_againf,(x,y4))
+
+def buttonset(text, x, y4, width, height, inactive_color, active_color, action = None):
+    cur = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    y = 210
+    y2 = 210
+    
+    #print(click)
+    if x + width > cur[0] > x and y4 + height > cur[1] > y4:
+        win.blit(settf,(x,y4))
+        if click[0] == 1 and action != None:
+            if action == "settings":
+                print('setter complete')
+                         
+                          
+    else:
+        win.blit(settf,(x,y4))
+
+def lap1f():
+    global lap1
+    print('player 1 lap completed')
+    lap1 += 1
+    ready = False
+
+def lap2f():
+    global lap2
+    print('Player 2 lap completed')
+    lap2 += 1
+
+def hit2():
+    global vel2
+    print('Player 2 Hit')
+    vel2 -= 1
+    print(vel2)
+
+def hit():
+    global vel
+    print('player 1 hit')
+    vel -= 1
+    print(vel)
+
+def you_win(player):
+    global y
+    global y2
+
+    
+  
+
+    winn = True
+
+    while winn:
+        for event in pygame.event.get():
+                #print(event)
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
+        if player == 1:
+            string = "Player 1"
+
+        else:
+            string = "Player 2"        
+
+        win.fill(white)
+        message_to_screen(f"{string} You Win",green,-100,size="large")
+        message_to_screen("Congratulations",black,-30)
+
+        buttonq("quit", 50,500,64,64,red,light_red,action="quit")
+        
+        pygame.display.update()
+
+    
+
+class projectile(object):
+    def __init__(self,x,y,radius,color,facing):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.facing = facing
+        self.vel = 8 * facing
+
+    def draw(self,win):
+        pygame.draw.circle(win,self.color,(self.x,self.y),self.radius)
+
+class projectile2(object):
+    def __init__(self,x,y,radius,color,facing):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.facing = facing
+        self.vel = 8 * facing
+
+    def draw(self,win):
+        pygame.draw.circle(win,self.color,(self.x,self.y),self.radius)
+
+
+bullets = []
+missiles = []
+rocks = []
+class Rock(object):
+    def __init__(self,x,y,color,radius):
+        self.x = x
+        self.y = y
+        self.color = color
+        self.radius = radius
+        
+
+    def draw(self,win):
+        win.blit(rockf,(self.x,self.y))
+
+    def check_col(self,rockx,rocky,rock):
+        if y - width  < rocky-6 + 2 and y + width  > rocky:
+            if x + width > rockx and x - width < rockx + 2:
+                print("bam")
+                vel -= 1
+                rocks.remove(rock)
+
+
+
+
+
+
+
+
+
+rock1 = Rock(random.randrange(200,400),random.randrange(200,400),brown,10)
+rocks.append(rock1)
+
+rock2 = Rock(random.randrange(200,400),random.randrange(200,400),brown,10)
+rocks.append(rock2)
+
+rock3 = Rock(random.randrange(200,400),random.randrange(200,400),brown,10)
+rocks.append(rock3)
+
+rock4 = Rock(random.randrange(200,400),random.randrange(200,400),brown,10)
+rocks.append(rock4)
+
+
+
+
+def gameloop():
+    global img
+    global x
+    global y
+    global width
+    global height
+    global x2
+    global y2
+    global x3
+    global y3
+    global vel
+    global fheight
+    global img2
+    global bullets
+    global missiles
+    global rocks
+    global vel2
+    run = True
+
+    while run:
+        pygame.time.delay(10)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+        
+            
+        
+        for bullet in bullets:
+            if bullet.y - bullet.radius < y2 + height2 and bullet.y + bullet.radius > y2:
+                if bullet.x + bullet.radius > x2 and bullet.x - bullet.radius < x2 + width2:
+                    hit2()
+                    bullets.pop(bullets.index(bullet))
+
+            if bullet.x < 500 and bullet.x >0:
+                if img == left or img == right:
+                    bullet.x += bullet.vel
+                if img == car or img == down:
+                    bullet.y += bullet.vel
+            else:
+                bullets.pop(bullets.index(bullet))
+        
+        for missile in missiles:
+            if missile.y - missile.radius < y + height and missile.y + missile.radius > y:
+                if missile.x + missile.radius > x and missile.x - missile.radius < x + width:
+                    hit()
+                    missiles.pop(missiles.index(missile))
+
+            if missile.x < 500 and missile.x >0:
+                if img2 == left2 or img2 == right2:
+                    missile.x += missile.vel
+                if img2 == car2 or img2 == down2:
+                    missile.y += missile.vel
+            else:
+                missiles.pop(missiles.index(missile))
+        
+        
+        
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            x -= vel
+            img = left
+
+        if keys[pygame.K_RIGHT]:
+            x += vel
+            img = right
+
+        if keys[pygame.K_UP]:
+            y -= vel
+            img = car
+
+        if keys[pygame.K_DOWN]:
+            y += vel
+            img = down
+        
+        if keys[pygame.K_a]:
+            x2 -= vel2
+            img2 = left2
+        
+        if keys[pygame.K_d]:
+            x2 += vel2
+            img2 = right2
+        
+        if keys[pygame.K_w]:
+            y2 -= vel2
+            img2 = car2f
+        
+        if keys[pygame.K_s]:
+            y2 += vel2
+            img2 = down2
+        
+        if keys[pygame.K_SPACE]:
+            if img == left or img == car:
+                facing = -1
+            else:
+                facing = 1
+            if len(bullets) < 5:
+                bullets.append(projectile(round(x + width//2),round(y + height//2),6,black,facing))
+        
+        if keys[pygame.K_e]:
+            if img2 == left2 or img2 == car2:
+                facing2 = -1
+            else:
+                facing2 = 1
+            if len(missiles) < 5:
+                missiles.append(projectile2(round(x2 + width2//2),round(y2 + height2//2),6,black,facing2))
+
+        
+        
+        
+        win.fill(white)
+        draw_tiles()
+        draw_track()
+        buttonq("close",50,500,64,64,red,light_red,action="quit")
+        buttonp("pause",200,500,64,64,red,light_red,action="pause")
+        buttonset("settings",450,500,64,64,red,light_red,action="settings")
+        
+        win.blit(img,(x,y))
+        win.blit(img2,(x2,y2))
+        pygame.draw.rect(win,black,(20,260,20,40))
+        pygame.draw.rect(win,red,(x3,y3,fwidth,fheight))
+        pygame.draw.rect(win,black,(120,260,20,40))
+        
+
+        
+
+
+        
+
+        if y == 220:
+            reset = True
+
+
+
+        if y - width  < y3-12 + fheight and y + width  > y3:
+            if x + width > x3 and x - width < x3 + fwidth:
+                if ready == True:
+                    lap1f()
+        
+        if y2 - width  < y3-12 + fheight and y2 + width  > y3:
+            if x2 + width > x3 and x2 - width < x3 + fwidth:
+                lap2f()
+        
+        if lap1 == 20:
+            print("player 1 wins")
+            you_win(1)
+            
+        
+        if lap2 == 20:
+            print("player 2 wins")
+            you_win(2)
+        
+        
+        for bullet in bullets:
+            bullet.draw(win)
+        
+        for missile in missiles:
+            missile.draw(win)
+        
+        for rock in rocks:
+            rock.draw(win)
+            
+            
+        if y - width  < rock1.y-6 + 2 and y + width  > rock1.y:
+            if x + width > rock1.x and x - width < rock1.x + 2:
+                print("bam")
+                vel -= 0.1
+                
+                
+        
+        if y - width  < rock2.y-6 + 2 and y + width  > rock2.y:
+            if x + width > rock2.x and x - width < rock2.x + 2:
+                print("bam")
+                vel -= 0.1
+                
+        
+        if y - width  < rock3.y-6 + 2 and y + width  > rock3.y:
+            if x + width > rock3.x and x - width < rock3.x + 2:
+                print("bam")
+                vel -= 0.1
+                
+        
+        if y - width  < rock4.y-6 + 2 and y + width  > rock4.y:
+            if x + width > rock4.x and x - width < rock4.x + 2:
+                print("bam")
+                vel -= 0.1
+                
+                     
+
+        
+        
+        
+                
+        pygame.display.update()
+
+gameloop()
+pygame.quit()
